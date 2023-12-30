@@ -1,0 +1,325 @@
+<odoo>
+    <data>
+
+        <record id="cash_register_form_view" model="ir.ui.view">
+            <field name="name">account_cash_register.form</field>
+            <field name="model">account.cash.register</field>
+            <field name="priority" eval="15"/>
+            <field name="arch" type="xml">
+                <form string="Cash register">
+                    <header>
+                        <button name="button_open" string="Submit" states="draft" class="oe_highlight" type="object"/>
+                        <button name="button_validated" string="Valider" class="oe_highlight" states="open"
+                                type="object"
+                                groups="base.group_user"/>
+                        <button name="button_approve" string="Approuver" class="oe_highlight" states="validated"
+                                type="object"
+                                groups="base.group_user"/>
+
+                        <button name="button_paid" string="Payer" states="approved" type="object"
+                                groups="base.group_user" class="oe_highlight"/>
+                        <button name="button_draft" string="Remettre en brouillon" states="open" type="object"
+                                groups="base.group_user"/>
+                        <button name="button_cancel" string="Annuler" states="open,validated,approve" type="object"
+                                confirm="Êtes-vous sûr de vouloir annuler cette pièce?"
+                                groups="base.group_user"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,open,validated,approve,paid"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                            </group>
+                            <group>
+                                <field name="name" placeholder="" readonly="1"/>
+                                <field name="cash_year" invisible="" readonly="1"/>
+                            </group>
+                        </group>
+                        <group col="3">
+                            <group>
+                                <field name="transaction_type" widget="radio"
+                                       attrs="{'readonly':[('state', 'not in', ['draft','open'])]}"/>
+                            </group>
+                            <group>
+
+                                <field name="date" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="user_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="beneficiaire" widget="radio"/>
+                                <field name="employee_id"
+                                       attrs="{'readonly':[('state', 'not in', ['draft','open'])], 'invisible':[('beneficiaire', '=', 'others')],'required': [('beneficiaire', '=', 'employee')]}"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="partner_id"
+                                       attrs="{'readonly':[('state', 'not in', ['draft','open'])], 'invisible':[('beneficiaire', '=', 'employee')], 'required': [('beneficiaire', '=', 'others')]}"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="department_id" readonly="1" force_save="1" invisible="1"/>
+                                <field name="responsible_id" readonly="1" force_save="1" invisible="1"/>
+                            </group>
+                        </group>
+
+                        <group col="3">
+                            <group>
+                                <field name="payment_method" required="1"
+                                       attrs="{'readonly': [('state', 'not in', ['draft','open'])]}"/>
+                            </group>
+                            <group>
+                                <field name="bank" required=""
+                                       attrs="{'readonly': [('state', 'not in', ['draft','open'])],
+                                   'required': [('payment_method', 'not in', ['cash'])],
+                                   'invisible': [('payment_method', 'not in', ['bank','virement','cheque','others'])]}"/>
+                                <field name="bank_number" required=""
+                                       attrs="{'readonly': [('state', 'not in', ['draft','open'])],
+                                   'required': [('payment_method', 'not in', ['cash'])],
+                                  'invisible': [('payment_method', 'not in', ['bank','virement','cheque','others'])]}"/>
+                            </group>
+                            <group>
+                                <field name="deposit_name" required=""
+                                       attrs="{'readonly': [('state', 'not in', ['draft','open'])],
+                                   'required': [('payment_method', 'not in', ['cash'])],
+                                   'invisible': [('payment_method', 'not in', ['bank','virement','cheque','others'])]}"/>
+                                <field name="cheque_number" required=""
+                                       attrs="{'readonly': [('state', 'not in', ['draft','open'])],
+                                   'required': [('payment_method', 'in', ['cheque'])],
+                                   'invisible': [('payment_method', 'not in', ['cheque'])]}"/>
+                            </group>
+                        </group>
+                        <group name="motif" attrs="{'readonly':[('state', 'not in', ['draft','open'])],'invisible':
+                            [('transaction_type', 'in', ['output_f'])]}">
+                            <field name="description_ids" attrs="{'readonly':[('state', 'in', ['paid'])]}">
+                                <tree editable="bottom" string="">
+                                    <field name="name" required="1"/>
+                                    <field name="amount" required="1"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group class="oe_subtotal_footer oe_right">
+                            <div>
+                                <label for="amount_c"/>
+                            </div>
+                            <field name="amount_c" readonly="1" nolabel="1" class="oe_subtotal_footer_separator"
+                                   widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                        <group>
+                            <!--                            <field name="amount" readonly="1" class="oe_subtotal_footer_separator"/>-->
+                            <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                <label for="amount_words" invisible="1"/>
+                            </div>
+
+                            <field name="amount_words" nolabel="1" class="oe_subtotal_footer_separator" invisible="1"/>
+                            <!--                            <field name="amounts" nolabel="1" class="oe_subtotal_footer_separator" invisible="1"/>-->
+                            <div class="oe_clear"/>
+
+                        </group>
+
+                        <notebook>
+                            <page string="Informations caisse">
+                                <group>
+                                    <group>
+                                        <field name="user_id" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="submit_date" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="validate_user" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="validate_date" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="approve_user" invisible="" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="approve_date" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="pay_user" invisible="" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="payment_date" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="cash_register_tree_view" model="ir.ui.view">
+            <field name="name">account_cash_register.tree</field>
+            <field name="model">account.cash.register</field>
+            <field name="priority" eval="15"/>
+            <field name="arch" type="xml">
+                <tree string="Cash register">
+                    <field name="date"/>
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="payment_method"/>
+                    <field name="amount"/>
+                    <field name="user_id"/>
+                    <field name="employee_id"/>
+                    <field name="partner_id"/>
+                    <field name="payment_date"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="cash_register_search_view" model="ir.ui.view">
+            <field name="name">account_cash_register.search</field>
+            <field name="model">account.cash.register</field>
+            <field name="arch" type="xml">
+                <search string="Cash register">
+                    <group name="filters">
+                        <filter name="state_draft" icon="terp-document-new" domain="[('state','=','draft')]"
+                                string="Draft"/>
+                        <filter name="state_open" icon="terp-gtk-media-pause"
+                                domain="[('state','in',['open'])]"
+                                string="Open"/>
+                        <filter name="state_validated" icon="terp-gtk-media-pause"
+                                domain="[('state','in',['validated'])]" string="Validé"/>
+                        <filter name="state_paid" icon="terp-check" domain="[('state','in',['paid'])]"
+                                string="Payer"/>
+                        <filter name="state_approve" icon="terp-check" domain="[('state','in',['approve'])]"
+                                string="Approuvé"/>
+                        <filter name="state_cancel" icon="terp-check" domain="[('state','in',['cancel'])]"
+                                string="Annulé"/>
+                        <filter name="state_refused" icon="terp-check" domain="[('state','in',['refused'])]"
+                                string="Refusé"/>
+
+                        <separator orientation="vertical"/>
+
+                        <field name="create_date"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <separator orientation="vertical"/>
+                        <filter name="input_type" icon="terp-gtk-media-pause"
+                                domain="[('transaction_type', '=', 'input')]" string="Recettes Générales"/>
+                        <filter name="output_type" icon="terp-gtk-media-pause"
+                                domain="[('transaction_type','=', 'output')]"
+                                string="Dépenses Générales"/>
+
+                        <separator orientation="vertical"/>
+                        <separator orientation="vertical"/>
+                        <field name="create_date"/>
+                    </group>
+                    <group expand="1" string="Group By">
+                        <field name="name" string="Numero pièce"/>
+                        <field name="employee_id"/>
+
+                        <field name="date" string="Date"/>
+                        <field name="transaction_type" string="Type transaction"/>
+                        <field name="payment_method" string="Methode paiement"/>
+                        <filter name="month" string="Date" date="payment_date"/>
+                        <filter string="Beneficiaire" name="groupby_employee" domain="[]"
+                                context="{'group_by':'employee_id'}"/>
+                        <filter string="Emetteur" name="groupby_createdby" domain="[]"
+                                context="{'group_by':'user_id'}"/>
+
+                        <filter string="state" name="groupby_state" domain="[]"
+                                context="{'group_by':'state'}"/>
+                        <filter string="Date Emission" name="group_by_date" domain="[]" context="{'group_by':'date'}"/>
+                        <filter string="Date paiement" name="group_by_payment_date" domain="[]"
+                                context="{'group_by':'payment_date'}"/>
+                        <filter string="Tansaction type" name="group_by_transaction" domain="[]"
+                                context="{'group_by':'transaction_type'}"/>
+                        <filter string="Mode de paiement" name="group_by_payment_method" domain="[]"
+                                context="{'group_by':'payment_method'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <!--         MES PIECES DE CAISSE -->
+        <record id="cash_register_act_window" model="ir.actions.act_window">
+            <field name="name">Mes pièces</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.cash.register</field>
+            <field name="view_mode">form</field>
+            <field name="view_mode">tree,form,pivot</field>
+            <field name="domain">[('user_id', '=', uid)]</field>
+            <field name="context">{ "search_default_week":1, }</field>
+            <field name="search_view_id" ref="cash_register_search_view"/>
+            <!--            <field name="view_id" ref="account_cash_register_act_window"/>-->
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Click to create new cash register.</p>
+            </field>
+        </record>
+
+
+        <!-- PIECES DE CAISSE A VALIDER -->
+        <record model="ir.actions.act_window" id="validated_cash_list">
+            <field name="name">A valider</field>
+            <field name="res_model">account.cash.register</field>
+            <field name="view_mode">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_state_open': 1,}</field>
+            <field name="search_view_id" ref="cash_register_search_view"/>
+        </record>
+
+
+        <!--         TOUTES LES PIECES DE CAISSE -->
+        <record model="ir.actions.act_window" id="cash_register_list_all">
+            <field name="name">Toutes les pièces</field>
+            <field name="res_model">account.cash.register</field>
+            <field name="view_mode">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="cash_register_search_view"/>
+        </record>
+        <!--        pieces de caisse a approuver-->
+        <record model="ir.actions.act_window" id="approved_cash_list">
+            <field name="name">A approuver</field>
+            <field name="res_model">account.cash.register</field>
+            <field name="view_mode">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_state_validated': 1,}</field>
+            <field name="search_view_id" ref="cash_register_search_view"/>
+        </record>
+        <!-- PIECES DE CAISSE A PAYER -->
+        <record model="ir.actions.act_window" id="paid_cash_list">
+            <field name="name">A payer</field>
+            <field name="res_model">account.cash.register</field>
+            <field name="view_mode">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_state_approve': 1,}</field>
+            <field name="search_view_id" ref="cash_register_search_view"/>
+        </record>
+        <!-- PIECES DE CAISSE REFUSEES -->
+        <record model="ir.actions.act_window" id="refused_cash_list">
+            <field name="name">Refuser</field>
+            <field name="res_model">account.cash.register</field>
+            <field name="view_mode">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{'search_default_state_refused': 1,}</field>
+            <field name="search_view_id" ref="cash_register_search_view"/>
+        </record>
+
+        <record id="validated_cash_view_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="4"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="cash_register_tree_view"/>
+            <field name="act_window_id" ref="validated_cash_list"/>
+        </record>
+        <!--        TOUTES LES PIECES-->
+        <menuitem id="menu_all_cash_register" name="DEPENSES" parent="cash_register_root"
+                  action="cash_register_list_all" sequence="6"
+                  groups="base.group_user"/>
+        <!--        TOUTES MES PIECES-->
+        <menuitem id="menu_my_cash_register" name="Mes pièces" parent="cash_register_root"
+                  action="cash_register_act_window" sequence="10"
+                  groups="base.group_user"/>
+        <!--       PIECES A VALIDER-->
+        <menuitem id="menu_validate_cash_register" name="Dépenses à valider" parent="cash_register_root"
+                  action="validated_cash_list" sequence="13" groups="base.group_user"/>
+        <!--        PIECES A APPROUVER-->
+        <menuitem id="menu_approve_cash_register" name="Dépenses à approuver" parent="cash_register_root"
+                  action="approved_cash_list" sequence="14" groups="base.group_user"/>
+        <!--        PIECES A PAYER-->
+        <menuitem id="menu_pay_cash_register" name="Dépenses à payer" parent="cash_register_root"
+                  action="paid_cash_list" sequence="15" groups="base.group_user"/>
+        <menuitem id="menu_refuse_cash_register" name="Dépenses refusées" parent="cash_register_root"
+                  action="refused_cash_list" sequence="17" groups="base.group_user"/>
+    </data>
+</odoo>

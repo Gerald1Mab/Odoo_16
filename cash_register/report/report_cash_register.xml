@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="cash_register_report" model="ir.actions.report">
+            <field name="name">Ordre Dépenses</field>
+            <field name="model">account.cash.register</field>
+            <field name="binding_model_id" ref="model_account_cash_register"/>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cash_register.cash_register_template</field>
+            <field name="report_file">cash_register.cash_register_template</field>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="template_report_register">
+            <t t-foreach="docs" t-as="o">
+                <div t-attf-class="header o_company_#{o.company_id.id}_layout" t-att-style="report_header_style">
+                    <div class="row">
+                        <div class="col-3 mb4">
+                            <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)"
+                                 style="max-height: 80px;"
+                                 alt="Logo"/>
+                        </div>
+                    </div>
+                </div>
+                <div t-attf-class="article o_report_layout_standard o_company_#{o.company_id.id}_layout"
+                     t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id"
+                     t-att-data-oe-lang="o and o.env.context.get('lang')">
+                    <div class="pt-5">
+                        <div class="watermark_logo"
+                             style="position:absolute;opacity:0.20;width:50%;z-index:99;top:400px;right:50px;left:60px;">
+                            <t t-if='o.company_id.logo'>
+                                <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo"/>
+                            </t>
+                        </div>
+                        <!-- This div ensures that the address is not cropped by the header. -->
+                        <t t-call="web.address_layout"/>
+                    </div>
+                    <t t-raw="0"/>
+                </div>
+
+                <div t-attf-class="footer o_standard_footer o_company_#{o.company_id.id}_layout">
+                    <div class="text-center" style="border-top: 1px solid black;">
+                        <ul class="list-inline mb4">
+                            <!-- using the list-inline-item class from bootstrap causes weird behaviours in pdf report
+                                 adding d-inline class fixes the problem-->
+                            Tel:
+                            <li t-if="o.company_id.phone" class="list-inline-item d-inline">
+                                <span class="o_force_ltr" t-field="o.company_id.phone"/>
+                            </li>
+                            Capital:
+                            <li t-if="o.company_id.website" class="list-inline-item d-inline">
+                                <span t-field="o.company_id.website"/>
+                            </li>
+                            <li t-if="o.company_id.vat" class="list-inline-item d-inline"><t
+                                    t-esc="o.company_id.country_id.vat_label or 'NUI'"/>:
+                                <span t-field="o.company_id.vat"/>
+                            </li>
+
+                            <li t-if="o.company_id.company_registry" class="list-inline-item d-inline">
+                                <span class="o_force_ltr" t-field="o.company_id.company_registry"/>
+                            </li>
+                            Siège social:
+                            <li t-if="o.company_id.street" class="list-inline-item d-inline">
+                                <span t-field="o.company_id.street"/>
+                            </li>
+                            BP:
+                            <li t-if="o.company_id.zip" class="list-inline-item d-inline">
+                                <span t-field="o.company_id.zip"/>
+                                <span t-field="o.company_id.city"/>-
+                                <span t-field="o.company_id.country_id"/>
+                            </li>
+                            Email:
+                            <li t-if="o.company_id.email" class="list-inline-item d-inline">
+                                <span t-field="o.company_id.email"/>
+                            </li>
+                        </ul>
+
+                        <div name="financial_infos">
+                            <span t-field="o.company_id.report_footer"/>
+                        </div>
+
+                        <div t-if="report_type == 'pdf'" class="text-muted">
+                            Page:
+                            <span class="page"/>
+                            /
+                            <span class="topage"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+
+        <template id="cash_register_template">
+            <t t-call="web.html_container">
+                <t t-call="cash_register.template_report_register">
+                    <t t-foreach="docs" t-as="doc">
+                        <div class="conteneur">
+                            <br/>
+                            <br/>
+                            <t t-if="doc.transaction_type=='output'">
+                                <center>
+                                    <h2>
+                                        <u>BON DECAISSEMENT N°:</u>
+                                        <span t-field="doc.name"/>
+                                    </h2>
+                                </center>
+                            </t>
+                            <div style=" float: left;width:50%">
+                            </div>
+                            <br/>
+                            <div style=" float: right;width:50%;height:4%;">Date et Heure :
+                                <span t-field="doc.date"/>
+                                <br/>
+                                Exercice :
+                                <span t-field="doc.cash_year"/>
+                            </div>
+                        </div>
+                        <br/>
+                        <br/>
+                        <table style="border: 1px solid black; border-collapse: collapse;width:100%">
+                            <thead>
+                                <th style="text-align:center;width:70%;border:1px solid black;border-collapse:collapse;background-color: #96D4D4;">
+                                    MOTIF(S)
+                                </th>
+                                <th style="text-align:center;width:30%;border:1px solid black;border-collapse:collapse;background-color: #96D4D4;">
+                                    MONTANT(S)
+                                </th>
+                            </thead>
+                            <tbody>
+                                <t t-if="doc.description_ids">
+                                    <t t-foreach="doc.description_ids" t-as="desc">
+                                        <tr style="padding:50%">
+                                            <td style="text-align:center;padding:15px;">
+                                                <span t-field="desc.name"/>
+                                            </td>
+                                            <td style="text-align:center;">
+                                                <span t-field="desc.amount"/>
+                                            </td>
+                                            <br/>
+                                            <br/>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                            <tfooter>
+                                <tr>
+                                    <td style="text-align:center;border:solid black;border-collapse:collapse;">
+                                        TOTAL
+                                    </td>
+                                    <td style="text-align:center;border:solid black;border-collapse:collapse;">
+                                        <span t-field="doc.amount_c"/>
+                                    </td>
+                                </tr>
+                            </tfooter>
+                        </table>
+                        <br/>
+                        <div style="font-size:1.20em">
+                            <div style=" float: left;width:100%;height:5%">Total en lettres :
+                                <span t-esc="doc.amount_words"/>
+                                CFA
+                            </div>
+                        </div>
+                        <br/>
+                        <br/>
+                        <center>
+                            <div>
+                                <div style="float: left; width:20%; text-align:center">
+                                    <strong>
+                                        <u>EMETTEUR
+                                        </u>
+                                    </strong>
+                                    <br/>
+                                    <span t-field="doc.user_id"/>
+                                    <br/>
+                                    <span t-field="doc.submit_date"/>
+                                </div>
+                                <div style="float: left; width:20%; text-align:center">
+                                    <strong>
+                                        <u>BENEFICIAIRE
+                                        </u>
+                                    </strong>
+                                    <br/>
+                                    <t t-if="doc.employee_id">
+                                        <span t-field="doc.employee_id"/>
+                                    </t>
+                                    <t t-if="doc.partner_id">
+                                        <span t-field="doc.partner_id"/>
+                                    </t>
+                                    <br/>
+                                    <span t-field="doc.submit_date"/>
+                                </div>
+                                <div style="float: left; width:25%; text-align:center">
+                                    <strong>
+                                        <u>CHEF SERVICE
+                                        </u>
+                                    </strong>
+                                    <br/>
+                                    <span t-field="doc.validate_user"/>
+                                    <br/>
+                                    <span t-field="doc.validate_date"/>
+                                </div>
+                                <div style="float: left; width:20%; text-align:center">
+                                    <strong>
+                                        <u>LA DIRECTION</u>
+                                    </strong>
+                                    <br/>
+                                    <span t-field="doc.approve_user"/>
+                                    <br/>
+                                    <span t-field="doc.approve_date"/>
+                                </div>
+                                <div style="float: left; width:20%; text-align:center">
+                                    <strong>
+                                        <u>CAISSIER(E)
+                                        </u>
+                                    </strong>
+                                    <br/>
+                                    <span t-field="doc.pay_user"/>
+                                    <br/>
+                                    <span t-field="doc.payment_date"/>
+                                </div>
+                            </div>
+
+                        </center>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+
+    </data>
+</odoo>
