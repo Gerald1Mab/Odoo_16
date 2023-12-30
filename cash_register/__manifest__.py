@@ -6,7 +6,7 @@
     "version": "16.0.0",
     "category": "Accounting",
     "author": "Geraldine MABA",
-    "website": "https://github.com/OCA/account-payment",
+    "website": "",
     "summary": "Initiate expense and receipt documents for payments at the cash. Create bank statements",
     "license": "LGPL-3",
     'images': [
