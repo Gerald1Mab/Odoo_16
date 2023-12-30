@@ -5,7 +5,5 @@
         <menuitem id="cash_register_root" name="Dépenses" sequence="1"
                   web_icon="cash_register,static/description/icon.png"
                   groups="base.group_user"/>
-
-
     </data>
 </odoo>

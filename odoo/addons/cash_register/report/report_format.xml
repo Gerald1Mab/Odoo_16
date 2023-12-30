@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
+
         <record id="paperformat_statement" model="report.paperformat">
             <field name="name">PAPER  PAYSAGE</field>
             <field name="default" eval="True"/>

@@ -20,5 +20,6 @@
         "views/account_cash_register.xml",
         "report/report_format.xml",
         "report/report_cash_register.xml",
+
     ],
 }

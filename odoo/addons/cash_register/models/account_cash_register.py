@@ -100,7 +100,7 @@ class AccountCashRegister(models.Model):
                                  domain="[('state', 'not in', 'posted')]")
 
 
-    # MODE DE PAIEMENT
+    # MODE DE PAIEMEN
     payment_method = fields.Selection(string="Mode de paiement",
                                       selection=[('cash', 'Caisse'), ('bank', 'Banque'), ('virement', 'Virement'),
                                                  ('cheque', 'Chèques'), ('others', 'Autres')], required=False, )

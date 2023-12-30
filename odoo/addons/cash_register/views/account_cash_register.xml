@@ -256,6 +256,7 @@
             <field name="search_view_id" ref="cash_register_search_view"/>
         </record>
 
+
         <!--         TOUTES LES PIECES DE CAISSE -->
         <record model="ir.actions.act_window" id="cash_register_list_all">
             <field name="name">Toutes les pièces</field>
